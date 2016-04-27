@@ -3,6 +3,12 @@ import Tokenizer from 'css-selector-tokenizer';
 
 let hasOwnProperty = Object.prototype.hasOwnProperty;
 
+function camelize(str) {
+  return str.replace(/[_.-](\w|$)/g, function (_, x) {
+    return x.toUpperCase();
+  });
+}
+
 function getSingleLocalNamesForComposes(selectors) {
   return selectors.nodes.map((node) => {
     if(node.type !== 'selector' || node.nodes.length !== 1) {
@@ -89,6 +95,9 @@ const processor = postcss.plugin('postcss-modules-scope', function(options) {
 
     // Find any :local classes
     css.walkRules(rule => {
+      rule.selector = rule.selector.replace(/(\[([a-z-]+)])/g, (match, p1, p2) => {
+        return `:local(.${camelize(p2)})`;
+      });
       let selector = Tokenizer.parse(rule.selector);
       let newSelector = traverseNode(selector);
       rule.selector = Tokenizer.stringify(newSelector);
