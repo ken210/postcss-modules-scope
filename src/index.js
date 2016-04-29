@@ -96,7 +96,11 @@ const processor = postcss.plugin('postcss-modules-scope', function(options) {
     // Find any :local classes
     css.walkRules(rule => {
       rule.selector = rule.selector.replace(/(\[([a-z-]+)])/g, (match, p1, p2) => {
+        // replaces [some-selector] with :local(.someSelector)
         return `:local(.${camelize(p2)})`;
+      }).replace(/(\[([a-z-]+)~="([a-z0-9-]+)"])/g, function (match, p1, p2, p3) {
+        // replaces [some-selector~="value"]] with :local(.someSelector.value)
+        return ':local(.' + camelize(p2) + ').' + p3;
       });
       let selector = Tokenizer.parse(rule.selector);
       let newSelector = traverseNode(selector);
